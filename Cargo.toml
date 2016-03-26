@@ -2,6 +2,9 @@
 name = "half_edge_mesh"
 version = "1.0.0"
 authors = ["Mark Hintz <markohintz@gmail.com>"]
+license = "MIT"
+description = "A basic implementation of the half-edge mesh data structure. It has a bunch of the functions you probably want in a half-edge mesh, but probably not all of them. I'm intending to add more methods and mutation techniques, as I need them for other projects or as I think of them. Pull requests welcome!"
+repository = "https://github.com/mhintz/half-edge-mesh-rs"
 
 [dependencies]
 cgmath = "0.7.0"
