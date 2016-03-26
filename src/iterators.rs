@@ -1,8 +1,8 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use half_edge_mesh::edge::Edge;
-use half_edge_mesh::ptr::{
+use edge::Edge;
+use ptr::{
   Ptr,
   EdgePtr, EdgeRc,
   VertPtr, VertRc,

@@ -1,14 +1,14 @@
+use cgmath::Point3;
+
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use defs::*;
-
-use half_edge_mesh::edge::Edge;
-use half_edge_mesh::vert::Vert;
-use half_edge_mesh::face::Face;
-use half_edge_mesh::ptr::{Ptr, EdgeRc, VertRc, FaceRc, EdgePtr, VertPtr, FacePtr};
-use half_edge_mesh::iterators::ToPtrVec;
-use half_edge_mesh::util::*;
+use edge::Edge;
+use vert::Vert;
+use face::Face;
+use ptr::{Ptr, EdgeRc, VertRc, FaceRc, EdgePtr, VertPtr, FacePtr};
+use iterators::ToPtrVec;
+use util::*;
 
 /// Half-Edge Mesh data structure
 /// While it's possible to create non-triangular faces, this code assumes
@@ -44,7 +44,7 @@ impl HalfEdgeMesh {
 
   // A half-edge mesh requires at least a tetrahedron to be valid
   // p1: apex, p2: bottom left front, p3: bottom right front, p4: bottom rear
-  pub fn from_tetrahedron_pts(p1: Pt, p2: Pt, p3: Pt, p4: Pt) -> HalfEdgeMesh {
+  pub fn from_tetrahedron_pts(p1: Point3<f32>, p2: Point3<f32>, p3: Point3<f32>, p4: Point3<f32>) -> HalfEdgeMesh {
     // In progress
     let mut mesh = HalfEdgeMesh::empty();
 
@@ -72,7 +72,7 @@ impl HalfEdgeMesh {
   }
 
   // p1: top apex, p2: mid left front, p3: mid right front, p4: mid left back, p5: mid right back, p6: bottom apex
-  pub fn from_octahedron_pts(p1: Pt, p2: Pt, p3: Pt, p4: Pt, p5: Pt, p6: Pt) -> HalfEdgeMesh {
+  pub fn from_octahedron_pts(p1: Point3<f32>, p2: Point3<f32>, p3: Point3<f32>, p4: Point3<f32>, p5: Point3<f32>, p6: Point3<f32>) -> HalfEdgeMesh {
     let mut mesh = HalfEdgeMesh::empty();
 
     let v1 = Ptr::new_rc(Vert::empty(mesh.new_vert_id(), p1));
@@ -108,7 +108,7 @@ impl HalfEdgeMesh {
     return mesh;
   }
 
-  pub fn from_face_vertex_mesh(vertices: & Vec<Pt>, indices: & Vec<Tri>) -> HalfEdgeMesh {
+  pub fn from_face_vertex_mesh(vertices: & Vec<Point3<f32>>, indices: & Vec<[usize; 3]>) -> HalfEdgeMesh {
     let mut mesh = HalfEdgeMesh::empty();
     let mut id_map: HashMap<usize, u32> = HashMap::new(); // Maps indices to ids
 
@@ -304,7 +304,7 @@ impl HalfEdgeMesh {
   // Replace a face with three faces, each connected to the new point
   // And one of the face's previous vertices
   // TODO: Make all of these mesh-manipulation functions return a Result<(), &str> to check that manipulation was completed
-  pub fn triangulate_face(&mut self, point: Pt, target_face: & FaceRc) {
+  pub fn triangulate_face(&mut self, point: Point3<f32>, target_face: & FaceRc) {
     // get face edges
     let face_edges = target_face.borrow().adjacent_edges().to_ptr_vec();
     // get face vertexes, assumed to be counter-clockwise
@@ -368,7 +368,7 @@ impl HalfEdgeMesh {
     self.faces.remove(& target_face.borrow().id);
   }
 
-  pub fn triangulate_face_ptr(&mut self, point: Pt, face: & FacePtr) {
+  pub fn triangulate_face_ptr(&mut self, point: Point3<f32>, face: & FacePtr) {
     match face.upgrade() {
       Some(face_rc) => self.triangulate_face(point, & face_rc),
       None => (),
@@ -380,7 +380,7 @@ impl HalfEdgeMesh {
   /// in the border of this group are connected to the point in a new triangular face.
   /// The programmer is responsible for ensuring that there are no holes in the passed
   /// set of faces. Returns Pointers to the new faces in the result, if successful
-  pub fn attach_point_for_faces(&mut self, point: Pt, remove_faces: & Vec<FaceRc>) -> Result<Vec<FaceRc>, &'static str> {
+  pub fn attach_point_for_faces(&mut self, point: Point3<f32>, remove_faces: & Vec<FaceRc>) -> Result<Vec<FaceRc>, &'static str> {
     // collect a set of face ids to be removed, for later reference
     let outgoing_face_ids: HashSet<u32> = remove_faces.iter().map(|f| f.borrow().id).collect();
     let mut horizon_edges: HashMap<u32, EdgeRc> = HashMap::new();
@@ -554,7 +554,7 @@ impl HalfEdgeMesh {
     return Ok(return_faces);
   }
 
-  pub fn attach_point_for_face_ptrs(&mut self, point: Pt, faces: & Vec<FacePtr>) -> Result<Vec<FaceRc>, &'static str> {
+  pub fn attach_point_for_face_ptrs(&mut self, point: Point3<f32>, faces: & Vec<FacePtr>) -> Result<Vec<FaceRc>, &'static str> {
     let face_ptrs = faces.iter().filter_map(|f| f.upgrade()).collect::<Vec<FaceRc>>();
     self.attach_point_for_faces(point, & face_ptrs)
   }

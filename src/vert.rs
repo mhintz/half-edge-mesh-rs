@@ -1,21 +1,21 @@
-use std;
+use std::hash;
 
-use defs::*;
+use cgmath::Point3;
 
-use half_edge_mesh::ptr::{Ptr, EdgePtr, EdgeRc};
-use half_edge_mesh::iterators::*;
+use ptr::{Ptr, EdgePtr, EdgeRc};
+use iterators::*;
 
 #[derive(Debug)]
 pub struct Vert {
   pub edge: EdgePtr,
-  pub pos: Pt,
+  pub pos: Point3<f32>,
   pub id: u32,
 }
 
 impl Vert {
   // All structure of the mesh revolves around vertex positions and their connectivity.
   // (Faces are just an abstraction). All vertices must therefore have a concrete position.
-  pub fn empty(id: u32, pos: Pt) -> Vert {
+  pub fn empty(id: u32, pos: Point3<f32>) -> Vert {
     Vert {
       id: id,
       edge: EdgePtr::empty(),
@@ -24,7 +24,7 @@ impl Vert {
   }
 
   // Vertex connected to an existing edge
-  pub fn with_edge(id: u32, pos: Pt, edge: EdgePtr) -> Vert {
+  pub fn with_edge(id: u32, pos: Point3<f32>, edge: EdgePtr) -> Vert {
     Vert {
       id: id,
       edge: edge,
@@ -38,9 +38,9 @@ impl Vert {
 
   pub fn set_edge_rc(&mut self, edge: & EdgeRc) { self.edge = Ptr::new(edge); }
 
-  pub fn move_to(&mut self, pos: Pt) { self.pos = pos; }
+  pub fn move_to(&mut self, pos: Point3<f32>) { self.pos = pos; }
 
-  pub fn get_pos(& self) -> Pt { self.pos }
+  pub fn get_pos(& self) -> Point3<f32> { self.pos }
 
   pub fn is_valid(& self) -> bool { self.edge.is_valid() }
 
@@ -68,8 +68,8 @@ impl PartialEq<Vert> for Vert {
 
 impl Eq for Vert {}
 
-impl std::hash::Hash for Vert {
-  fn hash<H>(& self, state: &mut H) where H: std::hash::Hasher {
+impl hash::Hash for Vert {
+  fn hash<H>(& self, state: &mut H) where H: hash::Hasher {
     state.write_u32(self.id);
     state.finish();
   }

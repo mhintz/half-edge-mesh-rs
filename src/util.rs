@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use half_edge_mesh::ptr::{Ptr, EdgeRc};
-use half_edge_mesh::half_edge_mesh::HalfEdgeMesh;
+use ptr::{Ptr, EdgeRc};
+use mesh::HalfEdgeMesh;
 
 fn merge_tuple_opt<A, B>(o: (Option<A>, Option<B>)) -> Option<(A, B)> {
   match o {

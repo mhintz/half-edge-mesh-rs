@@ -1,7 +1,7 @@
-use std;
+use std::hash;
 
-use half_edge_mesh::ptr::{Ptr, EdgePtr, VertPtr, FacePtr, EdgeRc, VertRc, FaceRc};
-use half_edge_mesh::iterators::*;
+use ptr::{Ptr, EdgePtr, VertPtr, FacePtr, EdgeRc, VertRc, FaceRc};
+use iterators::*;
 
 #[derive(Debug)]
 pub struct Edge {
@@ -104,8 +104,8 @@ impl PartialEq<Edge> for Edge {
 
 impl Eq for Edge {}
 
-impl std::hash::Hash for Edge {
-  fn hash<H>(& self, state: &mut H) where H: std::hash::Hasher {
+impl hash::Hash for Edge {
+  fn hash<H>(& self, state: &mut H) where H: hash::Hasher {
     state.write_u32(self.id);
     state.finish();
   }

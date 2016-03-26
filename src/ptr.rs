@@ -1,9 +1,9 @@
 use std::rc::{Rc, Weak};
 use std::cell::RefCell;
 
-use half_edge_mesh::edge::Edge;
-use half_edge_mesh::vert::Vert;
-use half_edge_mesh::face::Face;
+use edge::Edge;
+use vert::Vert;
+use face::Face;
 
 pub type EdgePtr = Ptr<Edge>;
 pub type EdgeRc = Rc<RefCell<Edge>>;

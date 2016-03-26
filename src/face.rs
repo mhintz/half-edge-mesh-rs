@@ -1,20 +1,16 @@
-use std;
+use std::hash;
 
-use cgmath::Point;
-use cgmath::EuclideanVector;
-use cgmath::Vector;
+use cgmath::{Point3, Point, EuclideanVector, Vector3, Vector};
 
-use defs::*;
-
-use half_edge_mesh::ptr::{Ptr, EdgePtr, EdgeRc, VertRc};
-use half_edge_mesh::iterators::*;
+use ptr::{Ptr, EdgePtr, EdgeRc, VertRc};
+use iterators::*;
 
 // TODO: Better way of figuring out when to run compute_attrs
 #[derive(Debug)]
 pub struct Face {
   pub edge: EdgePtr,
-  pub normal: Vec3,
-  pub center: Pt,
+  pub normal: Vector3<f32>,
+  pub center: Point3<f32>,
   pub id: u32,
 }
 
@@ -25,8 +21,8 @@ impl Face {
       edge: EdgePtr::empty(),
       // Are these sensible defaults?
       // Are these values even necessary?
-      normal: Vec3::unit_z(),
-      center: Pt::origin(),
+      normal: Vector3::unit_z(),
+      center: Point3::origin(),
     }
   }
 
@@ -35,8 +31,8 @@ impl Face {
     Face {
       id: id,
       edge: edge,
-      normal: Vec3::unit_z(),
-      center: Pt::origin(),
+      normal: Vector3::unit_z(),
+      center: Point3::origin(),
     }
   }
 
@@ -56,7 +52,7 @@ impl Face {
   // So wait for the right time during initialization to run this
   // TODO: Decide what to do here with a degenerate face
   pub fn compute_attrs(&mut self) {
-    let mut center = Pt::origin();
+    let mut center = Point3::origin();
     let mut count: f32 = 0.0;
 
     let vert_list: Vec<VertRc> = self.adjacent_verts().to_ptr_vec();
@@ -95,15 +91,15 @@ impl Face {
     FaceAdjacentFaceIterator::new(self.edge.clone())
   }
 
-  pub fn distance_to(& self, point: & Pt) -> f32 {
+  pub fn distance_to(& self, point: & Point3<f32>) -> f32 {
     (point - self.center).length()
   }
 
-  pub fn directed_distance_to(& self, point: & Pt) -> f32 {
+  pub fn directed_distance_to(& self, point: & Point3<f32>) -> f32 {
     (point - self.center).dot(self.normal)
   }
 
-  pub fn can_see(& self, point: & Pt) -> bool {
+  pub fn can_see(& self, point: & Point3<f32>) -> bool {
     self.directed_distance_to(point) > 0.0000001 // Small epsilon to handle floating-point errors
   }
 }
@@ -114,8 +110,8 @@ impl PartialEq<Face> for Face {
 
 impl Eq for Face {}
 
-impl std::hash::Hash for Face {
-  fn hash<H>(& self, state: &mut H) where H: std::hash::Hasher {
+impl hash::Hash for Face {
+  fn hash<H>(& self, state: &mut H) where H: hash::Hasher {
     state.write_u32(self.id);
     state.finish();
   }
