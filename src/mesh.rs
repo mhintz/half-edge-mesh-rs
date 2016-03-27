@@ -68,7 +68,7 @@ impl HalfEdgeMesh {
 
     report_connect_err(connect_pairs(&mut mesh));
 
-    return mesh;
+    mesh
   }
 
   // p1: top apex, p2: mid left front, p3: mid right front, p4: mid left back, p5: mid right back, p6: bottom apex
@@ -105,15 +105,15 @@ impl HalfEdgeMesh {
 
     report_connect_err(connect_pairs(&mut mesh));
 
-    return mesh;
+    mesh
   }
 
-  pub fn from_face_vertex_mesh(vertices: & Vec<Point3<f32>>, indices: & Vec<[usize; 3]>) -> HalfEdgeMesh {
+  pub fn from_face_vertex_mesh(vertices: &[Point3<f32>], indices: &[[usize; 3]]) -> HalfEdgeMesh {
     let mut mesh = HalfEdgeMesh::empty();
     let mut id_map: HashMap<usize, u32> = HashMap::new(); // Maps indices to ids
 
     for (idx, pos) in vertices.iter().enumerate() {
-      let vert = Ptr::new_rc(Vert::empty(mesh.new_vert_id(), pos.clone()));
+      let vert = Ptr::new_rc(Vert::empty(mesh.new_vert_id(), *pos));
       id_map.insert(idx, vert.borrow().id);
       mesh.push_vert(vert);
     }
@@ -123,19 +123,16 @@ impl HalfEdgeMesh {
       let mut new_edges: Vec<EdgeRc> = Vec::new();
 
       for idx in tri {
-        match id_map.get(idx) {
-          Some(vert_id) => {
-            if mesh.vertices.contains_key(vert_id) {
-              let new_edge_id = mesh.new_edge_id();
-              if let Some(vert) = mesh.vertices.get(vert_id) {
-                let edge = Ptr::new_rc(Edge::with_origin(new_edge_id, Ptr::new(vert)));
-                edge.borrow_mut().set_face_rc(& face);
-                vert.borrow_mut().set_edge_rc(& edge);
-                new_edges.push(edge);
-              }
+        if let Some(vert_id) = id_map.get(idx) {
+          if mesh.vertices.contains_key(vert_id) {
+            let new_edge_id = mesh.new_edge_id();
+            if let Some(vert) = mesh.vertices.get(vert_id) {
+              let edge = Ptr::new_rc(Edge::with_origin(new_edge_id, Ptr::new(vert)));
+              edge.borrow_mut().set_face_rc(& face);
+              vert.borrow_mut().set_edge_rc(& edge);
+              new_edges.push(edge);
             }
-          },
-          None => (),
+          }
         }
       }
 
@@ -157,7 +154,7 @@ impl HalfEdgeMesh {
 
     report_connect_err(connect_pairs(&mut mesh));
 
-    return mesh;
+    mesh
   }
 
   pub fn new_edge_id(&mut self) -> u32 {
@@ -369,9 +366,8 @@ impl HalfEdgeMesh {
   }
 
   pub fn triangulate_face_ptr(&mut self, point: Point3<f32>, face: & FacePtr) {
-    match face.upgrade() {
-      Some(face_rc) => self.triangulate_face(point, & face_rc),
-      None => (),
+    if let Some(face_rc) = face.upgrade() {
+      self.triangulate_face(point, & face_rc)
     }
   }
 
@@ -380,7 +376,7 @@ impl HalfEdgeMesh {
   /// in the border of this group are connected to the point in a new triangular face.
   /// The programmer is responsible for ensuring that there are no holes in the passed
   /// set of faces. Returns Pointers to the new faces in the result, if successful
-  pub fn attach_point_for_faces(&mut self, point: Point3<f32>, remove_faces: & Vec<FaceRc>) -> Result<Vec<FaceRc>, &'static str> {
+  pub fn attach_point_for_faces(&mut self, point: Point3<f32>, remove_faces: &[FaceRc]) -> Result<Vec<FaceRc>, &'static str> {
     // collect a set of face ids to be removed, for later reference
     let outgoing_face_ids: HashSet<u32> = remove_faces.iter().map(|f| f.borrow().id).collect();
     let mut horizon_edges: HashMap<u32, EdgeRc> = HashMap::new();
@@ -398,8 +394,8 @@ impl HalfEdgeMesh {
         // Any edges which border a face which won't be removed, are part of the "horizon".
         let remove_edge = face_edge.borrow().pair.upgrade()
           .and_then(|p| p.borrow().face.upgrade())
-          .map(|f| outgoing_face_ids.contains(& f.borrow().id))
-          .unwrap_or(true); // Remove edges where pointer upgrades don't work
+          .map_or(true, |f| outgoing_face_ids.contains(& f.borrow().id)); 
+          // Remove edges where pointer upgrades don't work
 
         if remove_edge {
           // Removed edges are saved for later in a vec
@@ -423,8 +419,7 @@ impl HalfEdgeMesh {
         let remove_vert = face_vert.borrow().adjacent_faces()
           .all(|face_ptr| {
             face_ptr.upgrade()
-              .map(|f| outgoing_face_ids.contains(& f.borrow().id))
-              .unwrap_or(true)
+              .map_or(true, |f| outgoing_face_ids.contains(& f.borrow().id))
           });
 
         if remove_vert {
@@ -459,8 +454,8 @@ impl HalfEdgeMesh {
     // check the horizon edge next correspondences: each next value should itself have a next value.
     // In addition, each key value should have some other key's next pointing to it.
     // Because of the way the hashmap is constructed, no edge will point to itself (good!)
-    let horizon_next_keys: HashSet<u32> = horizon_next_map.keys().map(|e| e.clone()).collect();
-    let horizon_next_values: HashSet<u32> = horizon_next_map.values().map(|e| e.clone()).collect();
+    let horizon_next_keys: HashSet<u32> = horizon_next_map.keys().cloned().collect();
+    let horizon_next_values: HashSet<u32> = horizon_next_map.values().cloned().collect();
 
     // Test that the set of keys and values are equal, i.e. keys are a subset of values and vice versa
     if horizon_next_keys != horizon_next_values { return Err("Horizon is malformed - it does not form a connected loop"); }
@@ -482,15 +477,15 @@ impl HalfEdgeMesh {
     // Remove the faces, the edges, and the vertices that were marked for removal
     // Do this after all other data structures have been set up, because a valid mesh is required
     // for some steps, for example finding a horizon edge's next edge
-    for out_face in remove_faces.iter() {
-      self.faces.remove(& out_face.borrow().id);
+    for out_face in remove_faces {
+      self.faces.remove(&out_face.borrow().id);
     }
 
-    for out_vert_id in remove_verts.iter() {
+    for out_vert_id in &remove_verts {
       self.vertices.remove(out_vert_id);
     }
 
-    for out_edge_id in remove_edges.iter() {
+    for out_edge_id in &remove_edges {
       self.edges.remove(out_edge_id);
     }
 
@@ -551,19 +546,19 @@ impl HalfEdgeMesh {
       }
     }
 
-    return Ok(return_faces);
+    Ok(return_faces)
   }
 
-  pub fn attach_point_for_face_ptrs(&mut self, point: Point3<f32>, faces: & Vec<FacePtr>) -> Result<Vec<FaceRc>, &'static str> {
+  pub fn attach_point_for_face_ptrs(&mut self, point: Point3<f32>, faces: &[FacePtr]) -> Result<Vec<FaceRc>, &'static str> {
     let face_ptrs = faces.iter().filter_map(|f| f.upgrade()).collect::<Vec<FaceRc>>();
-    self.attach_point_for_faces(point, & face_ptrs)
+    self.attach_point_for_faces(point, &face_ptrs)
   }
 
   // This function should only work if the vertex has exactly three adjacent edges.
   // Therefore, it has three adjacent faces.
   // The vertices connected to those edges form a new face, and the faces and edges connected
   // to the removed vertex are also removed
-  pub fn remove_vert(&mut self, vert: & VertRc) -> Result<(), &'static str> {
+  pub fn remove_vert(&mut self, vert: &VertRc) -> Result<(), &'static str> {
     let vert_b = vert.borrow();
     let mut edges = vert_b.adjacent_edges().to_ptr_vec(); // get e for e in v.edges
     // Edges are iterated in clockwise order, but we need counter-clockwise order
@@ -600,47 +595,44 @@ impl HalfEdgeMesh {
 
     self.vertices.remove(& vert_b.id); // del v
 
-    return Ok(());
+    Ok(())
   }
 
-  pub fn remove_vert_ptr(&mut self, point: & VertPtr) -> Result<(), &'static str> {
+  pub fn remove_vert_ptr(&mut self, point: &VertPtr) -> Result<(), &'static str> {
     match point.upgrade() {
-      Some(point_rc) => self.remove_vert(& point_rc),
+      Some(point_rc) => self.remove_vert(&point_rc),
       None => Err("Provided pointer was invalid"),
     }
   }
 
   // flips an edge between two faces so that the faces are each split by
   // the other diagonal of the parallelogram they form.
-  pub fn flip_edge(&mut self, edge: & EdgeRc) {
+  pub fn flip_edge(&mut self, _edge: &EdgeRc) {
     unimplemented!();
   }
 
-  pub fn flip_edge_ptr(&mut self, edge: & EdgePtr) {
-    match edge.upgrade() {
-      Some(edge_rc) => self.flip_edge(& edge_rc),
-      None => (),
+  pub fn flip_edge_ptr(&mut self, edge: &EdgePtr) {
+    if let Some(edge_rc) = edge.upgrade() {
+       self.flip_edge(&edge_rc)
     }
   }
 
   // Inserts a vertex at the position, specified by tval, along edge.origin -> edge.next.origin
   // The edge's two neighboring faces are each split into two faces.
   // All four new faces include the new vertex
-  pub fn split_edge(&mut self, edge: & EdgeRc, tval: f32) {
+  pub fn split_edge(&mut self, _edge: &EdgeRc, _tval: f32) {
     unimplemented!();
   }
 
-  pub fn split_edge_rc(&mut self, edge: & EdgePtr, tval: f32) {
-    match edge.upgrade() {
-      Some(edge_rc) => self.split_edge(& edge_rc, tval),
-      None => (),
+  pub fn split_edge_rc(&mut self, edge: &EdgePtr, tval: f32) {
+    if let Some(edge_rc) = edge.upgrade() {
+       self.split_edge(& edge_rc, tval)
     }
   }
 }
 
 fn report_connect_err(res: Result<(), &str>) {
-  match res {
-    Err(e) => println!("Error connecting mesh pairs! Mesh is not valid! {}", e),
-    _ => {},
+  if let Err(e) = res {
+    println!("Error connecting mesh pairs! Mesh is not valid! {}", e)
   }
 }

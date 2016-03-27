@@ -5,12 +5,15 @@ use edge::Edge;
 use vert::Vert;
 use face::Face;
 
+pub type RcRef<T> = Rc<RefCell<T>>;
+
 pub type EdgePtr = Ptr<Edge>;
-pub type EdgeRc = Rc<RefCell<Edge>>;
+pub type EdgeRc = RcRef<Edge>;
 pub type VertPtr = Ptr<Vert>;
-pub type VertRc = Rc<RefCell<Vert>>;
+pub type VertRc = RcRef<Vert>;
 pub type FacePtr = Ptr<Face>;
-pub type FaceRc = Rc<RefCell<Face>>;
+pub type FaceRc = RcRef<Face>;
+
 
 // Ptr is essentially a wrapper around Option<Weak<RefCell<T>>>,
 // a.k.a. a nullable ref-counted pointer with interior mutability
@@ -28,10 +31,10 @@ impl<T> Ptr<T> {
   // Use this for constructing brand new objects.
   // Returns an Rc<RefCell<T>>, not a Ptr<T>,
   // don't get em mixed up
-  pub fn new_rc(val: T) -> Rc<RefCell<T>> { Rc::new(RefCell::new(val)) }
+  pub fn new_rc(val: T) -> RcRef<T> { Rc::new(RefCell::new(val)) }
 
   // Taken by reference to an existing object. Creates a Ptr
-  pub fn new(val: & Rc<RefCell<T>>) -> Ptr<T> {
+  pub fn new(val: & RcRef<T>) -> Ptr<T> {
     Ptr { val: Some(Rc::downgrade(val)) }
   }
 
@@ -39,7 +42,7 @@ impl<T> Ptr<T> {
     Ptr { val: None }
   }
 
-  pub fn merge_upgrade(weak_a: & Ptr<T>, weak_b: & Ptr<T>) -> Option<(Rc<RefCell<T>>, Rc<RefCell<T>>)> {
+  pub fn merge_upgrade(weak_a: & Ptr<T>, weak_b: & Ptr<T>) -> Option<(RcRef<T>, RcRef<T>)> {
     match (weak_a.upgrade(), weak_b.upgrade()) {
       (Some(strong_a), Some(strong_b)) => Some((strong_a, strong_b)),
       _ => None

@@ -59,7 +59,7 @@ impl Face {
 
     debug_assert!(vert_list.len() == 3, "should have 3 adjacent vertices");
 
-    for vert in vert_list.iter() {
+    for vert in &vert_list {
       let pos = vert.borrow().get_pos();
       center.x += pos.x;
       center.y += pos.y;
