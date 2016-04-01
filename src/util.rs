@@ -18,8 +18,10 @@ fn vert_ab_key(e: & EdgeRc) -> Option<(u32, u32)> {
 
 fn vert_ba_key(e: & EdgeRc) -> Option<(u32, u32)> { vert_ab_key(e).map(|tuple| (tuple.1, tuple.0)) }
 
-// Takes what is assumed to be a fully-connected mesh, with no
-// pair links, and establishes pair links between adjacent edges
+/// Takes what is assumed to be a fully constructed mesh, with no
+/// pair links, and establishes pair links between adjacent edges.
+/// If this function runs successfully on a mesh, all links in the mesh
+/// should point to their adjacent pair
 pub fn connect_pairs(mesh: &mut HalfEdgeMesh) -> Result<(), &'static str> {
   // Two-stage algorithm: first collect all edge A -> B relationships,
   // Then go through and look for edges that are B -> A

@@ -9,17 +9,16 @@ use ptr::{
   FacePtr, /*FaceRc,*/
 };
 
-// ToPtrVec
-// TODO: rename this, since it's not exactly a vec of "Ptr",
-// and that's potentially confusing
 
-// A trait for converting an interator of Ptr<T>
-// into a vector of Rc<RefCell<T>>
+/// A trait for converting an interator of Ptr<T>
+/// into a vector of Rc<RefCell<T>>
+/// TODO: rename this, since it's not exactly a vec of "Ptr",
+/// and that's potentially confusing
 pub trait ToPtrVec<T> where Self: Iterator<Item=Ptr<T>> {
   fn to_ptr_vec(self) -> Vec<Rc<RefCell<T>>>;
 }
 
-// Implement the trait for all iterators over Ptr<T> (all the iterators here)
+/// Implement the trait for all iterators over Ptr<T> (all the iterators here)
 impl<I, T> ToPtrVec<T> for I where I: Iterator<Item=Ptr<T>> {
   fn to_ptr_vec(self) -> Vec<Rc<RefCell<T>>> {
     self.filter_map(|v| v.upgrade()).collect()

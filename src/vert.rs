@@ -13,8 +13,8 @@ pub struct Vert {
 }
 
 impl Vert {
-  // All structure of the mesh revolves around vertex positions and their connectivity.
-  // (Faces are just an abstraction). All vertices must therefore have a concrete position.
+  /// All structure of the mesh revolves around vertex positions and their connectivity.
+  /// (Faces are just an abstraction). All vertices must therefore have a concrete position.
   pub fn empty(id: u32, pos: Point3<f32>) -> Vert {
     Vert {
       id: id,
@@ -23,7 +23,7 @@ impl Vert {
     }
   }
 
-  // Vertex connected to an existing edge
+  /// Vertex connected to an existing edge
   pub fn with_edge(id: u32, pos: Point3<f32>, edge: EdgePtr) -> Vert {
     Vert {
       id: id,

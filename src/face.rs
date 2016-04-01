@@ -48,9 +48,13 @@ impl Face {
 
   pub fn num_vertices(& self) -> usize { self.adjacent_verts().count() }
 
-  // Note: this only works when edges and verts are properly connected
-  // So wait for the right time during initialization to run this
-  // TODO: Decide what to do here with a degenerate face
+  /// Computes the attributes (normal and center) of this face
+  /// Note: this only works when the edges and verts are properly connected
+  /// So wait for the right time during initialization to run this
+  /// When a face or faces are added to a half edge mesh with one of the
+  /// provided functions, this function is called, so that the face attributes
+  /// are correct.
+  /// TODO: Decide what to do with a degenerate face
   pub fn compute_attrs(&mut self) {
     let mut center = Point3::origin();
     let mut count: f32 = 0.0;

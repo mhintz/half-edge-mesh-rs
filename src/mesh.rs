@@ -13,24 +13,28 @@ use util::*;
 /// Half-Edge Mesh data structure
 /// While it's possible to create non-triangular faces, this code assumes
 /// triangular faces in several locations
-// TODO: Better error reporting, using a custom error type
-// See also: http://blog.burntsushi.net/rust-error-handling/
-// TODO: Better way of updating face-specific data like center and normals
-// Probably should do it whenever faces are added or a vertex is modified ?
+/// mesh.edges, mesh.vertices, and mesh.faces are HashMaps containing reference-counted Pointers
+/// to the mesh contents. Usually, these Rc values are the last values to exist. When they
+/// are destroyed, the pointed-to contents are destroyed as well.
+/// Vertex, edge, and face ids are mesh-specific and unique only within a certain mesh
+/// Integer overflow is undefined in Rust, but checked in debug builds. I think this means
+/// that it's possible to generate the same id twice, after 2^32-1 ids have been made.
+/// Try not to make more than 2^32-1 of any one of them, stuff might get messed up.
+/// TODO: Better error reporting, using a custom error type
+/// See also: http://blog.burntsushi.net/rust-error-handling/
+/// Probably should do it whenever faces are added or a vertex is modified ?
+/// TODO: Better way of updating face-specific data like center and normals
 pub struct HalfEdgeMesh {
   pub edges: HashMap<u32, EdgeRc>,
   pub vertices: HashMap<u32, VertRc>,
   pub faces: HashMap<u32, FaceRc>,
-  // Vertex, edge, and face ids are mesh-specific and unique only within a certain mesh
-  // Integer overflow is undefined in Rust, but checked in debug builds. I think this means
-  // that it's possible to generate the same id twice, after 2^32-1 ids have been made.
-  // Try not to make more than 2^32-1 of any one of them, stuff might get messed up.
   cur_edge_id: u32,
   cur_vert_id: u32,
   cur_face_id: u32,
 }
 
 impl HalfEdgeMesh {
+  /// Constructs an empty mesh
   pub fn empty() -> HalfEdgeMesh {
     HalfEdgeMesh {
       edges: HashMap::new(),
@@ -42,8 +46,9 @@ impl HalfEdgeMesh {
     }
   }
 
-  // A half-edge mesh requires at least a tetrahedron to be valid
-  // p1: apex, p2: bottom left front, p3: bottom right front, p4: bottom rear
+  /// Construct a half edge mesh from four points that form a tetrahedron
+  /// A half-edge mesh requires at least a tetrahedron to be valid
+  /// p1: apex, p2: bottom left front, p3: bottom right front, p4: bottom rear
   pub fn from_tetrahedron_pts(p1: Point3<f32>, p2: Point3<f32>, p3: Point3<f32>, p4: Point3<f32>) -> HalfEdgeMesh {
     // In progress
     let mut mesh = HalfEdgeMesh::empty();
@@ -71,7 +76,8 @@ impl HalfEdgeMesh {
     return mesh;
   }
 
-  // p1: top apex, p2: mid left front, p3: mid right front, p4: mid left back, p5: mid right back, p6: bottom apex
+  /// Construct a half edge mesh from six points that form an octahedron
+  /// p1: top apex, p2: mid left front, p3: mid right front, p4: mid left back, p5: mid right back, p6: bottom apex
   pub fn from_octahedron_pts(p1: Point3<f32>, p2: Point3<f32>, p3: Point3<f32>, p4: Point3<f32>, p5: Point3<f32>, p6: Point3<f32>) -> HalfEdgeMesh {
     let mut mesh = HalfEdgeMesh::empty();
 
@@ -108,6 +114,8 @@ impl HalfEdgeMesh {
     return mesh;
   }
 
+  /// Construct a half edge mesh from a Vec of vertices and a Vec of triplets of indices into
+  /// the Vec of vertices.
   pub fn from_face_vertex_mesh(vertices: & Vec<Point3<f32>>, indices: & Vec<[usize; 3]>) -> HalfEdgeMesh {
     let mut mesh = HalfEdgeMesh::empty();
     let mut id_map: HashMap<usize, u32> = HashMap::new(); // Maps indices to ids
@@ -233,6 +241,7 @@ impl HalfEdgeMesh {
     }
   }
 
+  /// Adds a tuple of (face, edge, edge, edge) to the mesh
   pub fn add_triangle(&mut self, triangle: (FaceRc, EdgeRc, EdgeRc, EdgeRc)) {
     let mut key: u32;
 
@@ -250,10 +259,10 @@ impl HalfEdgeMesh {
     self.edges.insert(key, triangle.3);
   }
 
-  // Takes three Rc<RefCell<Vert>>,
-  // creates three edges and one face, and connects them as well as it can
-  // Note: since this creates a lone triangle, edge.pair links are
-  // still empty after this function
+  /// Takes three Rc<RefCell<Vert>>,
+  /// creates three edges and one face, and connects them as well as it can
+  /// Note: since this creates a lone triangle, edge.pair links are
+  /// still empty after this function
   pub fn make_triangle(&mut self, p1: & VertRc, p2: & VertRc, p3: & VertRc) -> (FaceRc, EdgeRc, EdgeRc, EdgeRc) {
     // Create triangle edges
     let e1 = Ptr::new_rc(Edge::with_origin(self.new_edge_id(), Ptr::new(& p1)));
@@ -286,7 +295,7 @@ impl HalfEdgeMesh {
     (f1, e1, e2, e3)
   }
 
-  // Checks if two faces are adjacent by looking for a shared edge
+  /// Checks if two faces are adjacent by looking for a shared edge
   pub fn are_faces_adjacent(& self, face_l: & FaceRc, face_r: & FaceRc) -> bool {
     face_l.borrow().adjacent_edges()
       .any(|edge| {
@@ -304,9 +313,9 @@ impl HalfEdgeMesh {
     }
   }
 
-  // Replace a face with three faces, each connected to the new point
-  // And one of the face's previous vertices
-  // TODO: Make all of these mesh-manipulation functions return a Result<(), &str> to check that manipulation was completed
+  /// Replace a face with three faces, each connected to the new point
+  /// And one of the face's previous vertices
+  /// TODO: Make all of these mesh-manipulation functions return a Result<(), &str> to check that manipulation was completed
   pub fn triangulate_face(&mut self, point: Point3<f32>, target_face: & FaceRc) {
     // get face edges
     let face_edges = target_face.borrow().adjacent_edges().to_ptr_vec();
@@ -562,10 +571,10 @@ impl HalfEdgeMesh {
     self.attach_point_for_faces(point, & face_ptrs)
   }
 
-  // This function should only work if the vertex has exactly three adjacent edges.
-  // Therefore, it has three adjacent faces.
-  // The vertices connected to those edges form a new face, and the faces and edges connected
-  // to the removed vertex are also removed
+  /// This function should only work if the vertex has exactly three adjacent edges.
+  /// Therefore, it has three adjacent faces.
+  /// The vertices connected to those edges form a new face, and the faces and edges connected
+  /// to the removed vertex are also removed
   pub fn remove_vert(&mut self, vert: & VertRc) -> Result<(), &'static str> {
     let vert_b = vert.borrow();
     let mut edges = vert_b.adjacent_edges().to_ptr_vec(); // get e for e in v.edges
@@ -613,8 +622,8 @@ impl HalfEdgeMesh {
     }
   }
 
-  // flips an edge between two faces so that the faces are each split by
-  // the other diagonal of the parallelogram they form.
+  /// flips an edge between two faces so that the faces are each split by
+  /// the other diagonal of the parallelogram they form.
   pub fn flip_edge(&mut self, edge: & EdgeRc) {
     unimplemented!();
   }
@@ -626,9 +635,9 @@ impl HalfEdgeMesh {
     }
   }
 
-  // Inserts a vertex at the position, specified by tval, along edge.origin -> edge.next.origin
-  // The edge's two neighboring faces are each split into two faces.
-  // All four new faces include the new vertex
+  /// Inserts a vertex at the position, specified by tval, along edge.origin -> edge.next.origin
+  /// The edge's two neighboring faces are each split into two faces.
+  /// All four new faces include the new vertex
   pub fn split_edge(&mut self, edge: & EdgeRc, tval: f32) {
     unimplemented!();
   }
