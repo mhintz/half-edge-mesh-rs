@@ -219,6 +219,7 @@ impl HalfEdgeMesh {
 
   pub fn extend_faces(&mut self, faces: & [FaceRc]) {
     for face in faces {
+      face.borrow_mut().compute_attrs();
       let key = face.borrow().id;
       self.faces.insert(key, face.clone());
     }
@@ -226,6 +227,7 @@ impl HalfEdgeMesh {
 
   pub fn move_faces(&mut self, faces: Vec<FaceRc>) {
     for face in faces {
+      face.borrow_mut().compute_attrs();
       let key = face.borrow().id;
       self.faces.insert(key, face);
     }
@@ -234,6 +236,7 @@ impl HalfEdgeMesh {
   pub fn add_triangle(&mut self, triangle: (FaceRc, EdgeRc, EdgeRc, EdgeRc)) {
     let mut key: u32;
 
+    triangle.0.borrow_mut().compute_attrs();
     key = triangle.0.borrow().id;
     self.faces.insert(key, triangle.0);
 
