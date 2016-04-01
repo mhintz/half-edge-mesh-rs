@@ -1,3 +1,5 @@
+// TODO: use clippy linter on this code
+
 extern crate cgmath;
 
 pub mod ptr;
