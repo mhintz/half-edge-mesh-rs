@@ -640,10 +640,3 @@ impl HalfEdgeMesh {
     }
   }
 }
-
-fn report_connect_err(res: Result<(), &str>) {
-  match res {
-    Err(e) => println!("Error connecting mesh pairs! Mesh is not valid! {}", e),
-    _ => {},
-  }
-}

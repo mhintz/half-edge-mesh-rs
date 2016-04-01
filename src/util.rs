@@ -61,7 +61,15 @@ pub fn connect_pairs(mesh: &mut HalfEdgeMesh) -> Result<(), &'static str> {
   return Ok(());
 }
 
-// Checks if edge pair connections are all valid
+/// Utility function for reporting problems with edge connectivity
+pub fn report_connect_err(res: Result<(), &str>) {
+  match res {
+    Err(e) => println!("Error connecting mesh pairs! Mesh is not valid! {}", e),
+    _ => {},
+  }
+}
+
+/// Checks if edge pair connections are all valid
 pub fn are_edge_pairs_valid(mesh: & HalfEdgeMesh) -> Result<(), &'static str> {
   let mut edge_hash: HashMap<(u32, u32), & EdgeRc> = HashMap::new();
 
