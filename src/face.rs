@@ -1,6 +1,6 @@
 use std::hash;
 
-use cgmath::{Point3, Point, EuclideanVector, Vector3, Vector};
+use cgmath::{Point3, Vector3, EuclideanSpace, InnerSpace};
 
 use ptr::{Ptr, EdgePtr, EdgeRc, VertRc};
 use iterators::*;
@@ -96,7 +96,7 @@ impl Face {
   }
 
   pub fn distance_to(& self, point: & Point3<f32>) -> f32 {
-    (point - self.center).length()
+    (point - self.center).magnitude()
   }
 
   pub fn directed_distance_to(& self, point: & Point3<f32>) -> f32 {
