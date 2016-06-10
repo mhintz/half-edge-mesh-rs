@@ -47,7 +47,9 @@ impl HalfEdgeMesh {
   }
 
   /// Construct a half edge mesh from four points that form a tetrahedron
-  /// A half-edge mesh requires at least a tetrahedron to be valid
+  /// A half-edge mesh requires at least a tetrahedron to be valid.
+  /// When seen from an arbitrary "front" side of the tetrahedron, the vertices given to this function
+  /// should be as follows:
   /// p1: apex, p2: bottom left front, p3: bottom right front, p4: bottom rear
   pub fn from_tetrahedron_pts(p1: Point3<f32>, p2: Point3<f32>, p3: Point3<f32>, p4: Point3<f32>) -> HalfEdgeMesh {
     // In progress
