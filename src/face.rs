@@ -1,6 +1,6 @@
 use std::hash;
 
-use cgmath::{Point3, Vector3, EuclideanSpace, InnerSpace};
+use cgmath::{Point3, Vector3, EuclideanSpace, InnerSpace, ApproxEq};
 
 use ptr::{Ptr, EdgePtr, EdgeRc, VertRc};
 use iterators::*;
@@ -104,7 +104,7 @@ impl Face {
   }
 
   pub fn can_see(& self, point: & Point3<f32>) -> bool {
-    self.directed_distance_to(point) > 0.0000001 // Small epsilon to handle floating-point errors
+    self.directed_distance_to(point) > f32::approx_epsilon() // Small epsilon to handle floating-point errors
   }
 }
 
