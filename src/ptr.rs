@@ -12,6 +12,7 @@ pub type VertRc = Rc<RefCell<Vert>>;
 pub type FacePtr = Ptr<Face>;
 pub type FaceRc = Rc<RefCell<Face>>;
 
+pub type RcRef<T> = Rc<RefCell<T>>;
 
 /// Ptr is essentially a wrapper around Option<Weak<RefCell<T>>>,
 /// a.k.a. a nullable ref-counted pointer with interior mutability
@@ -42,7 +43,7 @@ impl<T> Ptr<T> {
 
   /// Used as a utility function to merge the upgrade of two weak pointers
   /// into a single Option wrapping the success of both upgrades
-  pub fn merge_upgrade(weak_a: & Ptr<T>, weak_b: & Ptr<T>) -> Option<(Rc<RefCell<T>>, Rc<RefCell<T>>)> {
+  pub fn merge_upgrade(weak_a: & Ptr<T>, weak_b: & Ptr<T>) -> Option<(RcRef<T>, RcRef<T>)> {
     match (weak_a.upgrade(), weak_b.upgrade()) {
       (Some(strong_a), Some(strong_b)) => Some((strong_a, strong_b)),
       _ => None
