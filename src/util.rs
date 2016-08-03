@@ -65,9 +65,8 @@ pub fn connect_pairs(mesh: &mut HalfEdgeMesh) -> Result<(), &'static str> {
 
 /// Utility function for reporting problems with edge connectivity
 pub fn report_connect_err(res: Result<(), &str>) {
-  match res {
-    Err(e) => println!("Error connecting mesh pairs! Mesh is not valid! {}", e),
-    _ => {},
+  if let Err(e) = res {
+    println!("Error connecting mesh pairs! Mesh is not valid! {}", e);
   }
 }
 
