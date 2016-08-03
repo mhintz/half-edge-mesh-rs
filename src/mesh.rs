@@ -264,9 +264,9 @@ impl HalfEdgeMesh {
   /// still empty after this function
   pub fn make_triangle(&mut self, p1: & VertRc, p2: & VertRc, p3: & VertRc) -> (FaceRc, EdgeRc, EdgeRc, EdgeRc) {
     // Create triangle edges
-    let e1 = Ptr::new_rc(Edge::with_origin(self.new_edge_id(), Ptr::new(& p1)));
-    let e2 = Ptr::new_rc(Edge::with_origin(self.new_edge_id(), Ptr::new(& p2)));
-    let e3 = Ptr::new_rc(Edge::with_origin(self.new_edge_id(), Ptr::new(& p3)));
+    let e1 = Ptr::new_rc(Edge::with_origin(self.new_edge_id(), Ptr::new(p1)));
+    let e2 = Ptr::new_rc(Edge::with_origin(self.new_edge_id(), Ptr::new(p2)));
+    let e3 = Ptr::new_rc(Edge::with_origin(self.new_edge_id(), Ptr::new(p3)));
 
     // Be sure to set up vertex connectivity with the new edges
     // It doesn't matter which edge a vertex points to,
@@ -370,8 +370,8 @@ impl HalfEdgeMesh {
     // Connect pairs
     for (i, leading_edge) in new_lead_edges.iter().enumerate() {
       let trailing_edge = & new_trail_edges[(i + 1) % trail_edge_len];
-      leading_edge.borrow_mut().take_pair(Ptr::new(& trailing_edge));
-      trailing_edge.borrow_mut().take_pair(Ptr::new(& leading_edge));
+      leading_edge.borrow_mut().take_pair(Ptr::new(trailing_edge));
+      trailing_edge.borrow_mut().take_pair(Ptr::new(leading_edge));
     }
 
     // Remove the face and the edges from the mesh.
@@ -529,7 +529,7 @@ impl HalfEdgeMesh {
         // connect next ptrs: the horizon edge to the leading edge, the leading to the trailing, and the trailing to the horizon
         base_edge.borrow_mut().set_next_rc(& new_leading);
         new_leading.borrow_mut().set_next_rc(& new_trailing);
-        new_trailing.borrow_mut().set_next_rc(& base_edge);
+        new_trailing.borrow_mut().set_next_rc(base_edge);
         // connect all three to the face
         base_edge.borrow_mut().set_face_rc(& new_face);
         new_leading.borrow_mut().set_face_rc(& new_face);
