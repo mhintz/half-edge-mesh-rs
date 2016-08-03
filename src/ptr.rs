@@ -14,7 +14,7 @@ pub type FaceRc = Rc<RefCell<Face>>;
 
 pub type RcRef<T> = Rc<RefCell<T>>;
 
-/// Ptr is essentially a wrapper around Option<Weak<RefCell<T>>>,
+/// Ptr is essentially a wrapper around `Option<Weak<RefCell<T>>>`,
 /// a.k.a. a nullable ref-counted pointer with interior mutability
 /// This abstraction is used to get around Rust's
 /// validity, borrowing, and ownership rules, especially when constructing or
@@ -27,7 +27,7 @@ pub struct Ptr<T> {
 impl<T> Ptr<T> {
   /// Taken by value, so it moves the value out.
   /// Use this for constructing brand new objects.
-  /// Returns an Rc<RefCell<T>>, not a Ptr<T>,
+  /// Returns an `Rc<RefCell<T>>`, not a `Ptr<T>`,
   /// don't get em mixed up
   pub fn new_rc(val: T) -> Rc<RefCell<T>> { Rc::new(RefCell::new(val)) }
 
@@ -59,7 +59,7 @@ impl<T> Ptr<T> {
     self.val.as_ref().and_then(|v| v.upgrade())
   }
 
-  /// Converts from Option<Weak<RefCell<T>>> to Option<& Weak<RefCell<T>>>
+  /// Converts from `Option<Weak<RefCell<T>>>` to `Option<& Weak<RefCell<T>>>`
   /// Like the function of the same name on Option
   pub fn as_ref(& self) -> Option<& Weak<RefCell<T>>> {
     self.val.as_ref()

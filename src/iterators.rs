@@ -11,7 +11,7 @@ use ptr::{
 
 
 /// A trait for converting an interator of Ptr<T>
-/// into a vector of Rc<RefCell<T>>
+/// into a vector of `Rc<RefCell<T>>`
 /// TODO: rename this, since it's not exactly a vec of "Ptr",
 /// and that's potentially confusing
 pub trait ToPtrVec<T> where Self: Iterator<Item=Ptr<T>> {
@@ -339,7 +339,7 @@ impl Iterator for FaceAdjacentVertIterator {
               } else {
                 self.current = Some(next_weak);
                 Some(next_rc.borrow().origin.clone())
-              } 
+              }
             })
         }),
       None => self.start.upgrade()

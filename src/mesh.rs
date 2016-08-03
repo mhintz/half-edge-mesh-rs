@@ -13,7 +13,7 @@ use util::*;
 /// Half-Edge Mesh data structure
 /// While it's possible to create non-triangular faces, this code assumes
 /// triangular faces in several locations
-/// mesh.edges, mesh.vertices, and mesh.faces are HashMaps containing reference-counted Pointers
+/// mesh.edges, mesh.vertices, and mesh.faces are `HashMaps` containing reference-counted Pointers
 /// to the mesh contents. Usually, these Rc values are the last values to exist. When they
 /// are destroyed, the pointed-to contents are destroyed as well.
 /// Vertex, edge, and face ids are mesh-specific and unique only within a certain mesh
@@ -258,7 +258,7 @@ impl HalfEdgeMesh {
     self.edges.insert(key, triangle.3);
   }
 
-  /// Takes three Rc<RefCell<Vert>>,
+  /// Takes three `Rc<RefCell<Vert>>`,
   /// creates three edges and one face, and connects them as well as it can
   /// Note: since this creates a lone triangle, edge.pair links are
   /// still empty after this function
