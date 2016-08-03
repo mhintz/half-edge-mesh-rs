@@ -12,6 +12,7 @@ pub type VertRc = Rc<RefCell<Vert>>;
 pub type FacePtr = Ptr<Face>;
 pub type FaceRc = Rc<RefCell<Face>>;
 
+
 /// Ptr is essentially a wrapper around Option<Weak<RefCell<T>>>,
 /// a.k.a. a nullable ref-counted pointer with interior mutability
 /// This abstraction is used to get around Rust's

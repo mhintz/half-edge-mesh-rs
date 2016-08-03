@@ -60,7 +60,7 @@ pub fn connect_pairs(mesh: &mut HalfEdgeMesh) -> Result<(), &'static str> {
     }
   }
 
-  return Ok(());
+  Ok(())
 }
 
 /// Utility function for reporting problems with edge connectivity
@@ -102,5 +102,5 @@ pub fn are_edge_pairs_valid(mesh: & HalfEdgeMesh) -> Result<(), &'static str> {
     }
   }
 
-  return Ok(());
+  Ok(())
 }

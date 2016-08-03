@@ -198,13 +198,15 @@ impl Iterator for VertAdjacentVertIterator {
         .and_then(|cur_rc: EdgeRc| cur_rc.borrow().pair.upgrade())
         .and_then(|pair_rc: EdgeRc| {
           let next_weak: EdgePtr = pair_rc.borrow().next.clone();
-          return Ptr::merge_upgrade(& next_weak, & self.start)
+          Ptr::merge_upgrade(& next_weak, & self.start)
             .and_then(|(next_rc, start_rc)| {
-              if next_rc != start_rc {
+              if next_rc == start_rc {
+                None
+              } else {
                 self.current = Some(next_weak);
                 Some(pair_rc.borrow().origin.clone())
-              } else { None }
-            });
+              }
+            })
         }),
       None => self.start.upgrade()
         .and_then(|cur_rc: EdgeRc| cur_rc.borrow().pair.upgrade())
@@ -241,13 +243,15 @@ impl Iterator for VertAdjacentEdgeIterator {
         .and_then(|cur_rc: EdgeRc| cur_rc.borrow().pair.upgrade())
         .map(|pair_rc: EdgeRc| pair_rc.borrow().next.clone())
         .and_then(|next_weak: EdgePtr| {
-          return Ptr::merge_upgrade(& next_weak, & self.start)
+          Ptr::merge_upgrade(& next_weak, & self.start)
             .and_then(|(next_rc, start_rc)| {
-              if next_rc != start_rc {
+              if next_rc == start_rc {
+                None
+              } else {
                 self.current = Some(next_weak.clone());
                 Some(next_weak)
-              } else { None }
-            });
+              }
+            })
         }),
       None => self.start.upgrade()
         .map(|_: EdgeRc| {
@@ -283,12 +287,14 @@ impl Iterator for VertAdjacentFaceIterator {
         .and_then(|cur_rc: EdgeRc| cur_rc.borrow().pair.upgrade())
         .map(|pair_rc: EdgeRc| pair_rc.borrow().next.clone())
         .and_then(|next_weak: EdgePtr| {
-          return Ptr::merge_upgrade(& next_weak, & self.start)
+          Ptr::merge_upgrade(& next_weak, & self.start)
             .and_then(|(next_rc, start_rc)| {
-              if next_rc != start_rc {
+              if next_rc == start_rc {
+                None
+              } else {
                 self.current = Some(next_weak);
                 Some(next_rc.borrow().face.clone())
-              } else { None }
+              }
             })
         }),
       None => self.start.upgrade()
@@ -326,13 +332,15 @@ impl Iterator for FaceAdjacentVertIterator {
       Some(cur_weak) => cur_weak.upgrade()
         .map(|cur_rc: EdgeRc| cur_rc.borrow().next.clone())
         .and_then(|next_weak: EdgePtr| {
-          return Ptr::merge_upgrade(& next_weak, & self.start)
+          Ptr::merge_upgrade(& next_weak, & self.start)
             .and_then(|(next_rc, start_rc)| {
-              if next_rc != start_rc {
+              if next_rc == start_rc {
+                None
+              } else {
                 self.current = Some(next_weak);
                 Some(next_rc.borrow().origin.clone())
-              } else { None }
-            });
+              } 
+            })
         }),
       None => self.start.upgrade()
         .map(|cur_rc: EdgeRc| {
@@ -367,13 +375,15 @@ impl Iterator for FaceAdjacentEdgeIterator {
       Some(cur_weak) => cur_weak.upgrade()
         .map(|cur_rc: EdgeRc| cur_rc.borrow().next.clone())
         .and_then(|next_weak: EdgePtr| {
-          return Ptr::merge_upgrade(& next_weak, & self.start)
+          Ptr::merge_upgrade(& next_weak, & self.start)
             .and_then(|(next_rc, start_rc)| {
-              if next_rc != start_rc {
+              if next_rc == start_rc {
+                None
+              } else {
                 self.current = Some(next_weak.clone());
                 Some(next_weak)
-              } else { None }
-            });
+              }
+            })
         }),
       None => {
         self.current = Some(self.start.clone());
@@ -407,16 +417,18 @@ impl Iterator for FaceAdjacentFaceIterator {
       Some(cur_weak) => cur_weak.upgrade()
         .map(|cur_rc: EdgeRc| cur_rc.borrow().next.clone())
         .and_then(|next_weak: EdgePtr| {
-          return Ptr::merge_upgrade(& next_weak, & self.start)
+          Ptr::merge_upgrade(& next_weak, & self.start)
             .and_then(|(next_rc, start_rc)| {
-              if next_rc != start_rc {
+              if next_rc == start_rc {
+                None
+              } else {
                 next_rc.borrow().pair.upgrade()
                   .map(|pair_rc| {
                     self.current = Some(next_weak);
                     pair_rc.borrow().face.clone()
                   })
-              } else { None }
-            });
+              }
+            })
         }),
       None => self.start.upgrade()
         .and_then(|edge_rc: EdgeRc| edge_rc.borrow().pair.upgrade())
