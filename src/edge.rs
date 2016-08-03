@@ -80,7 +80,7 @@ impl Edge {
 
   /// Yields edge.origin, then edge.next.origin
   /// Gives you first the source of the half-edge, and then its target
-  pub fn adjacent_verts<'a> (&'a self) -> EdgeAdjacentVertIterator<'a> {
+  pub fn adjacent_verts(& self) -> EdgeAdjacentVertIterator {
     EdgeAdjacentVertIterator::new(self)
   }
 
@@ -93,7 +93,7 @@ impl Edge {
   /// Yields edge.face, then edge.pair.face
   /// Gives you the "left" face to the half edge, and then the "right" face
   /// Note that the "right" face is not connected to this edge, but to its pair
-  pub fn adjacent_faces<'a>(&'a self) -> EdgeAdjacentFaceIterator<'a> {
+  pub fn adjacent_faces(& self) -> EdgeAdjacentFaceIterator {
     EdgeAdjacentFaceIterator::new(self)
   }
 }
