@@ -9,4 +9,4 @@ readme = "README.md"
 keywords = ["half", "edge", "mesh", "graphics", "graph"]
 
 [dependencies]
-cgmath = "^0.9.1"
+cgmath = "^0.10.0"
