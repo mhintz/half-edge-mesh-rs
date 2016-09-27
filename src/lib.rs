@@ -1,6 +1,7 @@
 // TODO: use clippy linter on this code
 
 extern crate cgmath;
+extern crate approx;
 
 pub mod ptr;
 pub mod edge;

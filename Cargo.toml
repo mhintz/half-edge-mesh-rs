@@ -10,3 +10,4 @@ keywords = ["half", "edge", "mesh", "graphics", "graph"]
 
 [dependencies]
 cgmath = "^0.10.0"
+approx = "^0.1.1"
